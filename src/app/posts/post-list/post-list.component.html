@@ -11,4 +11,7 @@
       </mat-expansion-panel>
 </mat-accordion>
 <p class="info-text mat-body-1" *ngIf="posts.length<= 0">No posts added yet!</p>
+<mat-card>
+  <button mat-button color="primary" (click)="onCreatePost()"> Create Post</button>
+</mat-card>
 

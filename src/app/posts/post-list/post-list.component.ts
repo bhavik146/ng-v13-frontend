@@ -3,6 +3,7 @@ import { Subscription } from "rxjs";
 
 import { Post } from "../post.model";
 import { PostService } from "../posts.service";
+import { Router } from "@angular/router";
 
 @Component({
     selector: 'app-post-list',
@@ -21,7 +22,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     posts:Post[] = [];
     private postSubscription!:Subscription;
 
-    constructor(public postsService: PostService
+    constructor(public postsService: PostService, private router:Router
     ){
 
     }
@@ -49,6 +50,10 @@ export class PostListComponent implements OnInit, OnDestroy {
             
         }
         
+    }
+
+    onCreatePost(){
+        this.router.navigate(['create']);
     }
 
     nextStep(){
