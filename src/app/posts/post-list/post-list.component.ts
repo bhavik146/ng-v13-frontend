@@ -20,6 +20,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     //     {title: 'Post 3', content: 'This is post 3 content'}
     // ]
     posts:Post[] = [];
+    isLoading = false;
     private postSubscription!:Subscription;
 
     constructor(public postsService: PostService, private router:Router
@@ -28,8 +29,10 @@ export class PostListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.isLoading = true;
         this.postsService.getPosts();
         this.postSubscription = this.postsService.getPostUpdateListener().subscribe((posts:Post[])=>{
+            this.isLoading = false;
             this.posts =posts;
        })
     }
@@ -47,16 +50,7 @@ export class PostListComponent implements OnInit, OnDestroy {
 
         } else{
             console.log("Unable to delete post without id!");
-            
-        }
-        
+        }        
     }
 
-    onCreatePost(){
-        this.router.navigate(['create']);
-    }
-
-    nextStep(){
-
-    }
 }

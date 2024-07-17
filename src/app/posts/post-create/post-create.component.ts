@@ -1,30 +1,74 @@
-import { Component, EventEmitter, Output } from "@angular/core";
-import { NgForm } from "@angular/forms";
-import { Post } from "./../post.model";
-import { PostService } from "../posts.service";
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+
+import { PostService } from '../posts.service';
+import { Post } from '../post.model';
 
 @Component({
-    selector: 'app-post-create',
-    templateUrl: './post-create.component.html',
-    styleUrls: ['./post-create.component.css']
+  selector: 'app-post-create',
+  templateUrl: './post-create.component.html',
+  styleUrls: ['./post-create.component.css'],
 })
 
-export class PostCreateComponent {
-    
-    postService:PostService
-    constructor(postService: PostService){
-        this.postService =postService;
+export class PostCreateComponent implements OnInit {
+  post: Post;
+  isLoading: boolean = false;
+  form: FormGroup;
+  private mode: string = 'create';
+  public postId: string | null;
+
+  constructor(
+    public postService: PostService,
+    public route: ActivatedRoute,
+    private router: Router
+  ) {}
+  // @Output() postCreated = new EventEmitter<Post>();
+  ngOnInit(): void {
+    this.form = new FormGroup({
+      'title': new FormControl(null, {
+        validators: [Validators.required, Validators.minLength(2)],
+      }),
+      'content': new FormControl(null, {
+        validators: [Validators.required]
+      })
+    });
+    this.route.paramMap.subscribe((paramMap: ParamMap) => {
+      if (paramMap.has('postId')) {
+        this.mode = 'edit';
+        this.postId = paramMap.get('postId');
+        this.isLoading = true;
+        this.postService.getPost(this.postId).subscribe((postData) => {
+          this.isLoading = false;
+        //   console.log('postData from getPost() with id: ', postData);
+          this.post = {
+            'id' : postData._id,
+            'title' : postData.title,
+            'content': postData.content
+          };
+        //   console.log(this.post);
+          this.form.setValue({'title': this.post.title, 'content': this.post.content});
+        });
+      } else {
+        this.mode = 'create';
+        this.postId = null;
+      }
+    });
+  }
+
+  onAddPost() {
+    if (this.form.invalid) {
+      return;
     }
-    // @Output() postCreated = new EventEmitter<Post>();
-    onAddPost(form:NgForm){
-        if(form.invalid){
-            return;
-        }
-        // const post:Post = {
-        //     title: form.value.title,
-        //     content: form.value.content
-        // }
-        this.postService.addPost(form.value.title, form.value.content);
-        form.resetForm();
+    if (this.mode === 'create') {
+      this.postService.addPost(this.form.value.title, this.form.value.content);
+    } else if (this.mode === 'edit') {
+      this.postService.updatePost(
+        this.postId,
+        this.form.value.title,
+        this.form.value.content
+      );
     }
+    this.form.reset();
+  }
 }
