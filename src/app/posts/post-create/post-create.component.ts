@@ -78,13 +78,13 @@ export class PostCreateComponent implements OnInit {
   }
 
   onAddPost() {
-    console.log(this.form.get('file'));
+    console.log(this.form);
     
     if (this.form.invalid) {
       return;
     }
     if (this.mode === 'create') {
-      this.postService.addPost(this.form.value.title, this.form.value.content);
+      this.postService.addPost(this.form.value.title, this.form.value.content, this.form.value.image);
     } else if (this.mode === 'edit') {
       this.postService.updatePost(
         this.postId,
@@ -92,6 +92,6 @@ export class PostCreateComponent implements OnInit {
         this.form.value.content
       );
     }
-    this.form.reset();
+    // this.form.reset();
   }
 }
