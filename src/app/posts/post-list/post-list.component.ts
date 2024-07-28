@@ -1,9 +1,11 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { Subscription } from "rxjs";
+import { Router } from "@angular/router";
+import { PageEvent } from "@angular/material/paginator";
 
 import { Post } from "../post.model";
 import { PostService } from "../posts.service";
-import { Router } from "@angular/router";
+import { Subscription } from "rxjs";
+
 
 @Component({
     selector: 'app-post-list',
@@ -21,6 +23,10 @@ export class PostListComponent implements OnInit, OnDestroy {
     // ]
     posts:Post[] = [];
     isLoading = false;
+    totalPosts = 0;
+    postPerPage = 2;
+    currentPage = 1;
+    pageSizeOptions = [1,2,5,10]
     private postSubscription!:Subscription;
 
     constructor(public postsService: PostService, private router:Router
@@ -30,27 +36,37 @@ export class PostListComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.isLoading = true;
-        this.postsService.getPosts();
-        this.postSubscription = this.postsService.getPostUpdateListener().subscribe((posts:Post[])=>{
+        this.postsService.getPosts(this.postPerPage, this.currentPage);
+        this.postSubscription = this.postsService.getPostUpdateListener().subscribe((postData:{posts: Post[], postCount: number})=>{
             this.isLoading = false;
-            this.posts =posts;
+            this.totalPosts = postData.postCount;
+            this.posts =postData.posts;
        })
     }
 
-    ngOnDestroy(): void {
-        this.postSubscription.unsubscribe()
+    onChangedPage(pageData: PageEvent){
+        this.isLoading = false;
+        this.currentPage = pageData.pageIndex + 1;
+        this.postPerPage = pageData.pageSize;
+        this.postsService.getPosts(this.postPerPage, this.currentPage);
     }
 
     onDelete(postId:any ){
-        console.log("this.posts", this.posts);
-        
-        console.log("postId",postId );
+        // console.log("this.posts", this.posts);
+        // console.log("postId",postId );
         if (postId){
-            this.postsService.deletePost(postId);
+            this.postsService.deletePost(postId).subscribe(() => {
+                this.postsService.getPosts(this.postPerPage, this.currentPage)
+            });
 
         } else{
             console.log("Unable to delete post without id!");
         }        
+    }
+
+    
+    ngOnDestroy(): void {
+        this.postSubscription.unsubscribe()
     }
 
 }
