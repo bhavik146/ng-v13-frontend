@@ -63,9 +63,12 @@ export class PostListComponent implements OnInit, OnDestroy {
   onDelete(postId: any) {
     // console.log("this.posts", this.posts);
     // console.log("postId",postId );
+    this.isLoading =true;
     if (postId) {
       this.postsService.deletePost(postId).subscribe(() => {
         this.postsService.getPosts(this.postPerPage, this.currentPage);
+      },()=> {
+        this.isLoading =false;
       });
     } else {
       console.log('Unable to delete post without id!');
